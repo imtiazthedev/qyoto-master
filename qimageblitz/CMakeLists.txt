@@ -1,0 +1,35 @@
+PROJECT(qimageblitz-sharp)
+
+IF (NOT QT4_FOUND)
+	FIND_PACKAGE(Qt4 REQUIRED)
+ENDIF (NOT QT4_FOUND)
+
+IF (NOT QIMAGEBLITZ_FOUND)
+	FIND_PACKAGE(QImageBlitz REQUIRED)
+ENDIF (NOT QIMAGEBLITZ_FOUND)
+
+SET(SRC_CPP src/blitz.cpp)
+
+SET(SRC_CS src/BlitzBinding.cs
+	src/AssemblyInfo.cs
+	qimageblitz/*.cs)
+
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/generator 
+	${CMAKE_CURRENT_SOURCE_DIR}/../qyoto/src ${QT_INCLUDES} ${QIMAGEBLITZ_INCLUDES})
+LINK_DIRECTORIES (${LIBRARY_OUTPUT_PATH})
+ADD_LIBRARY(qimageblitz-sharp SHARED ${SRC_CPP})
+TARGET_LINK_LIBRARIES(qimageblitz-sharp ${SMOKE_QIMAGEBLITZ_LIBRARY} qyoto ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY}
+    ${QIMAGEBLITZ_LIBRARIES})
+
+CSHARP_ADD_LIBRARY(qimageblitz "${SRC_CS}" REFERENCES qt-dotnet COMPILE_FLAGS /warn:0 /keyfile:${KEYFILE})
+ADD_DEPENDENCIES(qimageblitz qt-dotnet qimageblitz-sharp ${SMOKE_QIMAGEBLITZ_LIBRARY})
+
+install(TARGETS qimageblitz-sharp
+ LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+    ARCHIVE DESTINATION ${LIB_INSTALL_DIR}
+    RUNTIME DESTINATION bin)
+if (WIN32)
+    # Get rid of the "lib" prefix on archives/DLLs in Windows.
+    set_target_properties(qimageblitz-sharp PROPERTIES PREFIX "" IMPORT_PREFIX "")
+endif (WIN32)
+INSTALL_ASSEMBLY(qimageblitz DESTINATION ${LIB_INSTALL_DIR} PACKAGE qyoto)
